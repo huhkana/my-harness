@@ -1,0 +1,14 @@
+{
+  "slug": "sale-request",
+  "flow": "판매 신청",
+  "stage": "done",
+  "s1_returns": 0,
+  "retries": {
+    "S1": 0,
+    "S2": 0,
+    "S3": 0,
+    "S4": 1,
+    "S5": 0
+  },
+  "approved": true
+}

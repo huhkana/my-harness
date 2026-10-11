@@ -1,0 +1,52 @@
+# 규칙 SSOT — 판정 스크립트는 이 파일만 읽는다.
+
+artifacts:
+  s1-flow.md:              [화면ID, 화면명, 진입 조건(role), 컴포넌트, 다음 화면, 근거]
+  s2-edge-cases.md:        [ID, 상황, 관련 상태값, 처리, 화면 추가 필요(Y/N), 근거]
+  s3-impact.md:            [ID, 영향받는 플로우/기능, 영향 내용, 근거]
+  s4-policy-conflicts.md:  [ID, 충돌 정책, 처리 방향, 근거]
+  s5-ux-writing.md:        [화면ID, 위치, 문구, 상태값, accent(Y/N)]
+
+evidence:
+  column: 근거
+  pattern: '^\d+(-\d+)?$'
+  must_exist_in: docs/prd.md
+
+allowed_status:            # prd.md 8장
+  role: [guest, free, paid, seller, admin]
+  visibility: [private, member_only, sale_requested]
+  review_status: [draft, pending, revision_requested, approved, rejected]
+  submission_status: [draft, submitted]
+
+never_violate:
+  admin_only_screens:      { keywords: [승인 처리, 반려 처리, 수정 요청 작성], role: admin }
+  seller_only_screens:     { keywords: [판매 신청], role: seller,
+                             flows: [asset-register, sale-request] }
+  required_edge_cases:
+    - { flows: [asset-register, sale-request], match: [role=paid, sale_requested] }
+    - { flows: [sale-request, admin-review], match_any: [개인정보, 고객정보, 회사기밀, 저작권] }
+  banned_terms: [for_sale, suspended, 판매 중, 판매 중지, 허들링 픽, 결제, 정산]
+
+design:
+  components:              # design.md Components
+    [button-primary, button-outline, button-pill-soft, pricing-card, pricing-card-featured,
+     testimonial-card, faq-row, portrait-tile, text-input, text-input-focused, nav-pill,
+     app-icon-squircle, brand-chip, badge-popular, badge-overlay, segmented-control,
+     segmented-control-active, award-lockup, compare-table, footer,
+     ex-pricing-tier, ex-pricing-tier-featured, ex-product-selector, ex-cart-drawer,
+     ex-app-shell-row, ex-data-table-cell, ex-auth-form-card, ex-modal-card,
+     ex-empty-state-card, ex-toast]
+  ban_all_caps: true
+  all_caps_allow: [AI, PDF]
+  accent: { max_per_screen: 2, banned_on: CTA }
+
+returns:
+  to_s1: [{ file: s2-edge-cases.md, column: 화면 추가 필요(Y/N), value: Y },
+          { file: s4-policy-conflicts.md, column: 처리 방향, value: 플로우 변경 }]
+  max_s1_returns: 2
+  max_stage_retries: 3
+
+human_approval:
+  after: S4
+  always: true
+  highlight_if: { file: s4-policy-conflicts.md, column: 처리 방향, value: PM 확인 }
